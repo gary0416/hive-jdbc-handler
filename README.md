@@ -4,6 +4,7 @@ based on https://github.com/apache/hive/tree/master/jdbc-handler (tag rel/releas
 works fine with hive 2.1.0(hdp 2.6.3.0-235):
 - modify hive and hadoop version.
 - modify maven shade configuration, add extra jar and mysql driver.
+- fix limit bug (reference part of HIVE-1010).
 
 # usage
 ```
