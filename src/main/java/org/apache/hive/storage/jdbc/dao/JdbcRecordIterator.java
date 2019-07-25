@@ -14,7 +14,6 @@
  */
 package org.apache.hive.storage.jdbc.dao;
 
-import org.apache.hadoop.io.NullWritable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,9 +65,6 @@ public class JdbcRecordIterator implements Iterator<Map<String, String>> {
       for (int i = 0; i < numColumns; i++) {
         String key = metadata.getColumnName(i + 1);
         String value = rs.getString(i + 1);
-        if (value == null) {
-          value = NullWritable.get().toString();
-        }
         record.put(key, value);
       }
 

@@ -16,15 +16,15 @@ package org.apache.hive.storage.jdbc;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessor;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessorFactory;
 import org.apache.hive.storage.jdbc.dao.JdbcRecordIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
@@ -63,7 +63,8 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
         Map<String, String> record = iterator.next();
         if ((record != null) && (!record.isEmpty())) {
           for (Entry<String, String> entry : record.entrySet()) {
-            value.put(new Text(entry.getKey()), new Text(entry.getValue()));
+            value.put(new Text(entry.getKey()),
+                    entry.getValue() == null ? NullWritable.get() : new Text(entry.getValue()));
           }
           return true;
         }

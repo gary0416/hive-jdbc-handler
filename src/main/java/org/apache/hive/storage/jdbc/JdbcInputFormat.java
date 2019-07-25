@@ -19,16 +19,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
-import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.Reporter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import org.apache.hadoop.mapred.*;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessor;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessorFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -59,15 +54,21 @@ public class JdbcInputFormat extends HiveInputFormat<LongWritable, MapWritable> 
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     try {
-      if (numSplits <= 0) {
-        numSplits = 1;
-      }
       LOGGER.debug("Creating {} input splits", numSplits);
       if (dbAccessor == null) {
         dbAccessor = DatabaseAccessorFactory.getAccessor(job);
       }
 
       int numRecords = dbAccessor.getTotalNumberOfRecords(job);
+
+      if (numRecords < numSplits) {
+        numSplits = numRecords;
+      }
+
+      if (numSplits <= 0) {
+        numSplits = 1;
+      }
+
       int numRecordsPerSplit = numRecords / numSplits;
       int numSplitsWithExtraRecords = numRecords % numSplits;
 
@@ -86,6 +87,7 @@ public class JdbcInputFormat extends HiveInputFormat<LongWritable, MapWritable> 
         offset += numRecordsInThisSplit;
       }
 
+      dbAccessor = null;
       return splits;
     }
     catch (Exception e) {
